@@ -1,0 +1,61 @@
+version: '3'
+services:
+  postgres-auth:
+    container_name: postgres-auth
+    restart: on-failure
+    image: postgres:15.2
+    environment:
+      POSTGRES_PASSWORD:
+      POSTGRES_USER:
+      POSTGRES_DB: 'auth_database'
+    command: '-c wal_level=logical'
+
+  zookeeper:
+    container_name: zookeeper
+    image: quay.io/debezium/zookeeper:2.3
+    ports:
+      - '2181:2181'
+      - '2888:2888'
+      - '3888:3888'
+
+  kafka0:
+    container_name: kafka0
+    image: quay.io/debezium/kafka:2.3
+    ports:
+      - '9092:9092'
+      - '29092:29092'
+    depends_on:
+      - zookeeper
+    environment:
+      ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka0:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka0:29092,CONTROLLER://kafka0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+
+  kafka-connect0:
+    container_name: kafka-connect0
+    image: quay.io/debezium/connect:2.3
+    ports:
+      - '8083:8083'
+    environment:
+      BOOTSTRAP_SERVERS: 'kafka0:29092'
+      GROUP_ID: '1'
+      CONFIG_STORAGE_TOPIC: 'my_connect_configs'
+      OFFSET_STORAGE_TOPIC: 'my_connect_offsets'
+      STATUS_STORAGE_TOPIC: 'my_connect_statuses'
+    depends_on:
+      - zookeeper
+      - kafka0
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - '8080:8080'
+    depends_on:
+      - kafka0
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'local'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka0:29092'
+      DYNAMIC_CONFIG_ENABLED: 'true'

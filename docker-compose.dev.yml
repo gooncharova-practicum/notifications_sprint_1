@@ -1,0 +1,50 @@
+version: '3.9'
+services:
+  app-admin:
+    tty: true
+    volumes:
+      - ./app/src:/opt/app
+    entrypoint: bash
+
+  app-api:
+    tty: true
+    volumes:
+      - ./app/src:/opt/app
+    entrypoint: bash
+
+  etl:
+    tty: true
+    volumes:
+      - ./etl/src:/opt/app
+    entrypoint: bash
+
+  postgres:
+    ports:
+      - '5432:5432'
+
+  rabbitmq:
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  redis:
+    ports:
+      - '6379:6379'
+
+  rediscommander:
+    container_name: rediscommander
+    restart: on-failure
+    image: rediscommander/redis-commander:latest
+    ports:
+      - '9000:8081'
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD
+
+  mailpit:
+    container_name: mailpit
+    restart: on-failure
+    image: axllent/mailpit:latest
+    ports:
+      - '8025:8025'
+      - '1025:1025'

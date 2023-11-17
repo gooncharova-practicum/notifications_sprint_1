@@ -1,0 +1,49 @@
+version: '3'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+    volumes:
+      - 'rabbitmq:/var/lib/rabbitmq'
+
+  instant:
+    container_name: instant
+    restart: on-failure
+    build:
+      context: ./
+      args:
+        - APPHOMEDIR
+        - USERNAME
+        - USER_UID
+        - USER_GID
+        - STATICROOT
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+    entrypoint: python3 instant_msg.py
+
+  scheduled:
+    container_name: scheduled
+    restart: on-failure
+    build:
+      context: ./
+      args:
+        - APPHOMEDIR
+        - USERNAME
+        - USER_UID
+        - USER_GID
+        - STATICROOT
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+    entrypoint: python3 scheduled_msg.py
+
+volumes:
+  rabbitmq:

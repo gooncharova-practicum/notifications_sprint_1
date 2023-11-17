@@ -1,0 +1,41 @@
+version: '3'
+services:
+  pytest:
+    container_name: pytest
+    build: ./
+    image: testing/pytest
+    environment:
+      - JWT_SECRET_KEY
+      - JWT_ALGORITHMS
+      - SECRET_API_KEY
+      - DB_DSN
+    depends_on:
+      - test-app-api
+      - test-app-admin
+
+  postgres:
+    extends:
+      file: ../../docker-compose.yml
+      service: postgres
+    container_name: test-postgres
+    volumes:
+      - /var/lib/postgresql/data
+
+  test-app-api:
+    extends:
+      file: ../../docker-compose.yml
+      service: app-api
+    container_name: test-app-api
+    image: testing/app-app-api
+
+  test-app-admin:
+    extends:
+      file: ../../docker-compose.yml
+      service: app-admin
+    container_name: test-app-admin
+    image: testing/app-app-admin
+    volumes:
+      - app_static:/var/www/static
+
+volumes:
+  app_static:

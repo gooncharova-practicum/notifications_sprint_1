@@ -1,0 +1,16 @@
+{
+  "name": "authpg-users-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "plugin.name": "pgoutput",
+    "tasks.max": "1",
+    "database.hostname": "postgres-auth",
+    "database.port": "5432",
+    "database.user": "app",
+    "database.password": "123qwe",
+    "database.dbname" : "auth_database",
+    "table.include.list": "auth.users,auth.users_info",
+    "column.exclude.list": "auth.users.password_hash,auth.users.role_id",
+    "topic.prefix": "authpg"
+  }
+}

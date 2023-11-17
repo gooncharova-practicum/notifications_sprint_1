@@ -1,0 +1,23 @@
+{
+  "name": "pg-jdbc-sink-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://postgres:5432/notify_database",
+    "connection.username": "app",
+    "connection.password": "123qwe",
+    "topics": "authpg.auth.users,authpg.auth.users_info",
+    "primary.key.fields": "id",
+    "primary.key.mode": "record_key",
+    "auto.create": "false",
+    "auto.evolve": "false",
+    "insert.mode": "upsert",
+    "delete.enabled": "true",
+    "schema.evolution": "basic",
+    "transforms": "Reroute",
+    "transforms.Reroute.type": "io.debezium.transforms.ByLogicalTableRouter",
+    "transforms.Reroute.topic.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.Reroute.topic.replacement": "$3",
+    "table.name.format": "notify_database.notify.${topic}"
+  }
+}
